@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoRECT: Overview and Results</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Font: Fira Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Fira Sans', sans-serif;
+    }
+    .plot-table {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .plot-item {
+      min-width: 200px;
+    }
+    .plot-wide-2x {
+      flex: 1 1 calc(40% - 1rem);
+    }
+    .plot-wide-2_5x {
+      flex: 1 1 calc(50% - 1rem);
+    }
+    .subcaption {
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 0.25rem;
+    }
+    select[multiple] {
+      height: auto !important;
+    }
+  </style>
+</head>
+<body class="bg-light p-4">
+  <div class="container">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">Overview</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="results-tab" data-bs-toggle="tab" data-bs-target="#results" type="button" role="tab">Results</button>
+      </li>
+    </ul>
+    <div class="tab-content mt-3">
+      <!-- Overview Tab -->
+      <div class="tab-pane fade show active" id="overview" role="tabpanel">
+        <h1>CoRECT: A Framework for Evaluating Embedding Compression Techniques</h1>
+
+        <p>
+          This project accompanies our paper on evaluating embedding compression techniques for dense retrieval at scale.
+          We present <strong>CoRECT</strong>, a framework designed to systematically measure the impact of compression strategies on retrieval performance.
+        </p>
+
+        <p>Our work addresses two main objectives:</p>
+        <ul>
+          <li><strong>Comparing embedding compression methods</strong>: We benchmark <strong>quantization</strong>, <strong>binarization</strong>, and <strong>dimensionality reduction</strong> techniques.</li>
+          <li><strong>Analyzing scalability</strong>: We evaluate how retrieval quality degrades or holds up when scaling the corpus from <strong>10K to 100M passages</strong> and from <strong>10K to 10M documents</strong>.</li>
+        </ul>
+
+        <p>Our findings show that:</p>
+        <ul>
+          <li><strong>Quantization</strong> consistently outperforms dimensionality reduction, especially on larger corpora.</li>
+          <li>Retrieval effectiveness can be preserved even at <strong>32× compression</strong> for large-scale corpora. This highlights the practicality of lightweight embedding representations.</li>
+        </ul>
+
+        <h2>CoRE: Controlled Retrieval Evaluation</h2>
+
+        <p>
+          The <strong>CoRE benchmark</strong> is a key component of our framework. It enables controlled experiments by varying corpus size and document length independently.
+          Built upon <strong>MS MARCO v2</strong> and human relevance judgments (<strong>TREC DL 2023</strong>), CoRE provides:
+        </p>
+
+        <ul>
+          <li><strong>Passage retrieval</strong>: 65 queries over 5 corpus sizes (10K to 100M)</li>
+          <li><strong>Document retrieval</strong>: 55 queries over 4 corpus sizes (10K to 10M)</li>
+        </ul>
+
+        <p>To ensure realistic evaluation:</p>
+        <ul>
+          <li>Each query includes <strong>10 high-quality relevant documents</strong></li>
+          <li>We adopt an advanced <strong>subsampling technique</strong> to retain <strong>hard distractors</strong>, drawn from top-ranked TREC DL system runs</li>
+          <li>Each query is paired with <strong>100 mined distractors</strong> and additional random negatives</li>
+        </ul>
+
+        <p>
+          This design makes CoRE robust for analyzing how retrieval performance is affected by corpus complexity and size.
+        </p>
+
+        <h2>Quantization Methods</h2>
+
+        <p>
+          We implement and benchmark a range of <strong>vector quantization techniques</strong>, including:
+        </p>
+
+        <ul>
+          <li><strong>Scalar quantization</strong>: Values are mapped into fixed bit-width ranges (e.g., 8-bit → 256 bins), computed on a per-batch and per-dimension basis using <strong>percentile binning</strong></li>
+          <li><strong>Binarization</strong>: Each embedding value is converted to 0 or 1 using the <strong>median</strong> of each dimension as the threshold</li>
+          <li><strong>Casting</strong>: We include <strong>16-bit float casting</strong> as a lightweight alternative to full 32-bit precision</li>
+        </ul>
+
+        <h3>Implementation Details</h3>
+
+        <ul>
+          <li>Quantization is applied to batches of up to <strong>50,000 vectors</strong></li>
+          <li>Percentile boundaries are computed for quantization, e.g., 25th, 50th, 75th for 2 bits, producing 4 discrete bins per dimension</li>
+          <li>Results are given in a <strong>grid of 36 compression levels</strong>, combining:
+            <ul>
+              <li>Full and truncated dimensionalities (1024 → 32)</li>
+              <li>Quantization levels (32-bit → 1-bit)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <p>
+          These methods are integrated into our open-source evaluation framework, making it easy to reproduce results and test new methods.
+        </p>
+
+        <h2>Getting Started</h2>
+
+        <p>To run the evaluation framework, follow these steps:</p>
+
+        <h4>1. Clone the repository</h4>
+
+        <pre><code>git clone</code></pre>
+
+        <h4>2. Install dependencies</h4>
+
+        <p>There are two ways you can install the dependencies to run the code.</p>
+
+        <h5>Using Poetry (recommended)</h5>
+
+        <p>If you have the <a href="https://python-poetry.org/">Poetry</a> package manager for Python installed already, you can simply set up everything with:</p>
+        <pre><code>poetry install<br>source $(poetry env info --path)/bin/activate</code></pre>
+        <p>After the installation of all dependencies, you will end up in a new shell with a loaded venv. In this shell, you can run the main <em>corect</em> command. You can exit the shell at any time with <em>exit</em>.</p>
+        <pre><code>corect --help</code></pre>
+        <p>To install new dependencies in an existing poetry environment, you can run the following commands with the shell environment being activated:</p>
+        <pre><code>poetry lock<br>poetry install</code></pre>
+
+        <h5>Using Pip (alternative)</h5>
+
+        <p>You can also create a venv yourself and use `pip` to install dependencies:</p>
+        <pre><code>python3 -m venv venv<br>source venv/bin/activate<br>pip install .</code></pre>
+
+        <h4>3. Run evaluation code</h4>
+
+        <p>The evaluation code currently supports two datasets: A transformed version of the MS MARCO v2 dataset, called CoRE, and public BEIR datasets. In addition to the dataset, the code also loads an embedding model (currently Jina V3 or E5-Multilingual) to evaluate the defined compression techniques. To start the evaluation, execute the command</p>
+        <pre><code>corect evaluate jina core     # Evaluates Jina V3 on CoRE<br>corect evaluate e5 beir       # Evaluates E5-Multilingual on BEIR</code></pre>
+        <p>After running the evaluation code, you will find the results in the <em>results</em> folder. The results are stored in a JSON file with the name of the model and the dataset. To share the results, copy the respective JSON file to the <em>share_results</em> folder.</p>
+
+        <h4>4. Extend CoRECT</h4>
+
+        <h5>Add new compression technique</h5>
+        <p>The currently implemented compression techniques can be found in the <a href="https://github.com/anonymous-202505/CoRECT/tree/main/src/corect/quantization">quantization</a> folder.
+          To add a new method, implement a class that extends <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/quantization/AbstractCompression.py">AbstractCompression</a> and add your custom compression method via the <em>compress()</em> method.
+          To include your class in the evaluation, modify the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/compression_registry.py">compression registry</a> and register your class with the compression methods dictionary.
+          You should now be able to evaluate your compression technique by running the evaluation script as described above.</p>
+
+        <h5>Add new model</h5>
+        <p>New models can be added by implementing the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/model_wrappers/AbstractModelWrapper.py">AbstractModelWrapper</a> class, which allows you to customize the query and corpus embedding process.
+          The wrapper then needs to be registered in the <em>_get_model_wrapper()</em> method of the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/cli/evaluate.py">evaluation script</a> and the model name defined there can then be used to evaluate the model.</p>
+        <pre><code>corect evaluate &lt;model_name&gt; core</code></pre>
+
+        <h5>Add new dataset</h5>
+        <p>Our framework supports the addition of any HuggingFace retrieval datasets with corpus, queries and qrels splits.
+          To add a custom dataset, navigate to the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/dataset_utils.py">dataset utils</a> script, add a load function for your new dataset and register it in the <em>load_data()</em> function.
+          You also need to add information on the new dataset to the <em>datasets</em> dictionary in this class in the form of <em>datasets[&lt;dataset_name&gt;]=[&lt;dataset_name&gt;]</em>.
+          Running the evaluation script on the new dataset can then be achieved by executing the evaluation command.</p>
+        <pre><code>corect evaluate jina &lt;dataset_name&gt;</code></pre>
+      </div>
+
+      <!-- Results Tab -->
+      <div class="tab-pane fade" id="results" role="tabpanel">
+        <p>Please select from the options below to view the plots.</p>
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <label class="form-label">Dataset</label>
+            <select class="form-select" id="dataset">
+              <option value="core">CoRE</option>
+              <option value="beir">BEIR</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Metric</label>
+            <select class="form-select" id="metric">
+              <option value="ndcg_at_10">NDCG@10</option>
+              <option value="recall_at_100">Recall@100</option>
+              <option value="recall_at_1000">Recall@1000</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Model</label>
+            <select class="form-select" id="models" multiple size="2">
+              <option selected>Jina v3</option>
+              <option>Multilingual E5 (instruct)</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Visualization</label>
+            <select class="form-select" id="visualization">
+              <option value="heatmaps">Heatmaps</option>
+              <option value="line_charts">Line charts</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="plotContainer">
+          <!-- Plots will appear here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const datasetSelect = document.getElementById('dataset');
+    const visualizationSelect = document.getElementById('visualization');
+    const modelSelect = document.getElementById('models');
+    const metricSelect = document.getElementById('metric');
+    const plotContainer = document.getElementById('plotContainer');
+
+    [datasetSelect, visualizationSelect, modelSelect, metricSelect].forEach(el => el.addEventListener('change', renderPlots));
+
+    function sanitizeModel(model) {
+      return model === 'Jina v3' ? 'JinaV3Wrapper' : 'E5MultilingualWrapper';
+    }
+
+    function renderPlots() {
+      const dataset = datasetSelect.value;
+      const viz = visualizationSelect.value;
+      const metric = metricSelect.value;
+      const selectedModels = Array.from(modelSelect.selectedOptions).map(o => o.value);
+      if (selectedModels.length === 0) {
+        selectedModels.push('Jina v3');
+        modelSelect.options[0].selected = true;
+      }
+      plotContainer.innerHTML = '';
+
+      const makePlot = (src, caption, extraClass = '') => `
+        <div class="plot-item ${extraClass}" title="${caption}">
+          <embed src="${src}" width="100%"/>
+          <div class="subcaption">${caption}</div>
+        </div>`;
+
+      selectedModels.forEach(model => {
+        const modelDir = sanitizeModel(model);
+        const modelHeader = `<h5 class="mt-4">Model: ${model}</h5>`;
+        let content = '';
+
+        if (viz === 'heatmaps') {
+          const dataset_name = dataset === 'core' ? 'CoRE' : 'BEIR';
+          content += '<p>Performance on ' + dataset_name + ' combining different levels of dimensionality reduction (y-axis) with different levels of precision/quantization (x-axis).</p>'
+          if (dataset === 'core') {
+            let src1 = [];
+            let src2 = [];
+            for (let i = 0; i <= 4; i++) {
+              src1.push(`./resources/heatmaps/${modelDir}/${metric}/passage_${10000*(10**i)}.png`);
+              src2.push(i <= 3 ? `./resources/heatmaps/${modelDir}/${metric}/document_${10000*(10**i)}.png` : null);
+            }
+            content += '<div class="plot-table mt-3">' + src1.map((src, i) => makePlot(src, `Passage corpus size=${10000*(10**i)}`)).join('') + '</div>';
+            content += '<div class="plot-table">' + src2.map((src, i) => src ? makePlot(src, `Document corpus size=${10000*(10**i)}`) : '').join('') + '</div>';
+          } else if (dataset === 'beir') {
+            const batch1 = [`./resources/heatmaps/${modelDir}/${metric}/aggregated.png`];
+            const dataset_names = ['ArguAna', 'CQADupstack', 'DBPedia', 'FiQA-2018', 'NFCorpus', 'NQ', 'Quora', 'SCIDOCS', 'SciFact', 'Touche-2020', 'TREC-COVID']
+            const datasets = ['arguana', 'cqadupstack',  'dbpedia', 'fiqa', 'nfcorpus', 'nq', 'quora', 'scidocs', 'scifact', 'touche2020', 'trec-covid',];
+            const batch2 = datasets.map(name => `./resources/heatmaps/${modelDir}/${metric}/${name}.png`);
+
+            content += '<div class="plot-table mt-3">' + makePlot(batch1[0], 'Average performance and standard deviation on BEIR datasets with absolute performance delta to full precision (upper left corner)') + batch2.map((src, i) => makePlot(src, dataset_names[i])).join('') + '</div>';
+          }
+        } else if (viz === 'line_charts' && dataset === 'core') {
+          content += '<p>Performance on the CoRE dataset with:<br> a) full-precision, i.e. 32-bit floating point vectors, passage retrieval reducing dimensionality, i.e. only taking the first 32 vector dimensions,<br> b) passage retrieval with all vector dimensions but different levels of quantization, and<br> c) document retrieval with all vector dimensions but different levels of quantization.</p>'
+          const plots = [
+            { file: `./resources/line_charts/${modelDir}/${metric}/combined.png`, caption: '', width: 'plot-wide-2_5x' }
+          ];
+          content += '<div class="plot-grid">' + plots.map(p => makePlot(p.file, p.caption, p.width)).join('') + '</div>';
+        }
+
+        plotContainer.innerHTML += modelHeader + content;
+      });
+    }
+
+    function updateVisualizationOptions() {
+      const selectedDataset = datasetSelect.value;
+      const lineOption = visualizationSelect.querySelector('option[value="line_charts"]');
+      if (selectedDataset === 'beir') {
+        if (visualizationSelect.value === 'line_charts') {
+          visualizationSelect.value = 'heatmaps';
+        }
+        lineOption.disabled = true;
+      } else {
+        lineOption.disabled = false;
+      }
+    }
+
+    datasetSelect.addEventListener('change', () => {
+      updateVisualizationOptions();
+      renderPlots();
+    });
+
+    updateVisualizationOptions();
+
+    renderPlots();
+  </script>
+</body>
+</html>
