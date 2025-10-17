@@ -1,0 +1,12 @@
+.env
+.idea
+__pycache__/
+poetry.lock
+datasets/
+results/
+temp/
+embed/
+index/
+model/
+*.npy
+*.gz

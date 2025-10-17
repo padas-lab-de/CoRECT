@@ -1,0 +1,5 @@
+DATASETS_FOLDER = "datasets"
+MODELS_FOLDER = "models"
+RESOURCES_FOLDER = "resources"
+TEMP_FOLDER = "temp"
+K_VALUES = [1, 3, 5, 10, 20, 100, 200, 300, 500, 1000]

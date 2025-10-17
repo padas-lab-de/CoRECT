@@ -1,0 +1,46 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "CoRECT"
+version = "1.0.0"
+description = "A framework for evaluating embedding compression techniques in the context of information retrieval."
+authors = [
+    "Laura Caspari",
+    "Michael Dinzinger",
+    "Christopher Fellicious",
+]
+homepage = "https://www.fim.uni-passau.de"
+repository = "https://www.fim.uni-passau.de"
+readme = "README.md"
+license = "MIT"
+packages = [
+    {include = "corect", from = "src"}
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+click = "^8.1.7"
+pandas = "^2.2.3"
+python-dotenv = "^1.0.1"
+huggingface-hub = "^0.30"
+torch = "^2.5.1"
+transformers = "^4.51.0"
+datasets = "^2.21.0"
+scikit-learn = "^1.6.1"
+mteb = "^1.37.0"
+trectools = "^0.0.50"
+black = "^25.1.0"
+isort = "^6.0.1"
+xformers = "^0.0.30"
+einops = "^0.8.1"
+numpy = "^1.26.4"
+seaborn = "^0.13.2"
+beautifulsoup4 = "^4.13.4"
+accelerate = "^1.8.1"
+python-terrier = "^0.13.1"
+faiss-cpu = "^1.11.0.post1"
+
+[tool.poetry.scripts]
+corect = "corect.corect:main"
