@@ -3,10 +3,12 @@ import os
 from collections import defaultdict
 
 import click
+import matplotlib.text as mtext
 import numpy as np
 from matplotlib import pyplot as plt
 
 from corect.config import METRICS, SHARE_RESULTS_FOLDER, RESOURCES_FOLDER
+
 
 USE_QUANTIZATION_METHODS = {
     "16_half": [(256, 4), (128, 8), (64, 16), (32, 32)],
@@ -31,42 +33,42 @@ USE_QUANTIZATION_METHODS = {
     "128_8_pq": [(1024, 16)],
     "128_2_pq": [(1024, 32)],
 }
-DISPLAY_NAMES = {
-    "32_full": "FP32",
-    "16_half": "FP16",
-    "16_bfloat16": "BF16",
-    "8_percentile": "8 Perc. Bin",
-    "8_equal_distance": "8 Equidistant Bin",
-    "4_percentile": "4 Perc. Bin",
-    "4_equal_distance": "4 Equidistant Bin",
-    "2_percentile": "2 Perc. Bin",
-    "2_equal_distance": "2 Equidistant Bin",
-    "1_binary_median": "1 Median Thresh.",
-    "1_binary_zero": "1 Zero Thresh.",
-    "1024_lsh": "LSH-1024",
-    "2048_lsh": "LSH-2048",
-    "4096_lsh": "LSH-4096",
-    "768_lsh": "LSH-768",
-    "1536_lsh": "LSH-1536",
-    "3072_lsh": "LSH-3072",
-    "6144_lsh": "LSH-6144",
-    "512_8_pq": "PQ-512-8",
-    "1024_2_pq": "PQ-1024-2",
-    "512_2_pq": "PQ-512-2",
-    "128_8_pq": "PQ-128-8",
-    "128_2_pq": "PQ-128-2",
-    "384_8_pq": "PQ-384-8",
-    "768_8_pq": "PQ-768-8",
-    "768_2_pq": "PQ-768-2",
-    "384_2_pq": "PQ-384-2",
-    "96_8_pq": "PQ-96-8",
-    "96_2_pq": "PQ-96-2",
-    "256_pca": "PCA-256",
-    "128_pca": "PCA-128",
-    "64_pca": "PCA-64",
-    "192_pca": "PCA-192",
-    "96_pca": "PCA-96",
-    "48_pca": "PCA-48",
+DISPLAY_NAMES_AND_COLORS = {
+    "32_full": ("FP32", "gray"),
+    "16_half": ("FP16", "gray"),
+    "16_bfloat16": ("BF16", "gray"),
+    "8_percentile": ("8 Perc. Bin.", "darkblue"),
+    "8_equal_distance": ("8 Equidistant Bin.", "darkgreen"),
+    "4_percentile": ("4 Perc. Bin", "cornflowerblue"),
+    "4_equal_distance": ("4 Equidistant Bin.", "mediumseagreen"),
+    "2_percentile": ("2 Perc. Bin.", "lightskyblue"),
+    "2_equal_distance": ("2 Equidistant Bin.", "palegreen"),
+    "1_binary_median": ("1 Median Thresh.", "cyan"),
+    "1_binary_zero": ("1 Zero Thresh.", "lime"),
+    "1024_lsh": ("LSH", "red"),
+    "2048_lsh": ("LSH", "red"),
+    "4096_lsh": ("LSH", "red"),
+    "768_lsh": ("LSH", "red"),
+    "1536_lsh": ("LSH", "red"),
+    "3072_lsh": ("LSH", "red"),
+    "6144_lsh": ("LSH", "red"),
+    "512_8_pq": ("PQ", "darkmagenta"),
+    "1024_2_pq": ("PQ", "darkmagenta"),
+    "512_2_pq": ("PQ", "darkmagenta"),
+    "128_8_pq": ("PQ", "darkmagenta"),
+    "128_2_pq": ("PQ", "darkmagenta"),
+    "384_8_pq": ("PQ", "darkmagenta"),
+    "768_8_pq": ("PQ", "darkmagenta"),
+    "768_2_pq": ("PQ", "darkmagenta"),
+    "384_2_pq": ("PQ", "darkmagenta"),
+    "96_8_pq": ("PQ", "darkmagenta"),
+    "96_2_pq": ("PQ", "darkmagenta"),
+    "256_pca": ("PCA", "darkorange"),
+    "128_pca": ("PCA", "darkorange"),
+    "64_pca": ("PCA", "darkorange"),
+    "192_pca": ("PCA", "darkorange"),
+    "96_pca": ("PCA", "darkorange"),
+    "48_pca": ("PCA", "darkorange"),
 }
 X_POS = {
     "8_percentile": -0.3,
@@ -79,10 +81,10 @@ X_POS = {
     "1_binary_zero": 0.4,
 }
 GROUPS = {
-    "FP": {"marker": "H", "name": "16_"},
     "PQ": {"marker": "o", "name": "pq"},
     "LSH": {"marker": "s", "name": "lsh"},
     "PCA": {"marker": "*", "name": "pca"},
+    "FP": {"marker": "H", "name": "16_"},
     "EDB": {"marker": "D", "name": "equal"},
     "PB": {"marker": "v", "name": "percentile"},
 }
@@ -113,6 +115,18 @@ DATASETS = {
     "touche2020": ["touche2020"],
     "trec-covid": ["trec-covid"],
 }
+
+
+class LegendTitle(object):
+    def __init__(self, text_props=None):
+        self.text_props = text_props or {}
+        super(LegendTitle, self).__init__()
+
+    def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+        x0, y0 = handlebox.xdescent, handlebox.ydescent
+        title = mtext.Text(x0, y0, orig_handle, **self.text_props)
+        handlebox.add_artist(title)
+        return title
 
 
 def collect_data(model_name: str, document_length: str, corpus_size: int):
@@ -184,9 +198,6 @@ def _generate_plot(data: dict, model_name: str):
             RESOURCES_FOLDER, "pareto", model_name, metric, "aggregated.pdf"
         )
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-
-        base_colors = plt.cm.tab20.colors + plt.cm.Set3.colors[-2:]
-        quantization_methods = list(USE_QUANTIZATION_METHODS.keys())
         plt.figure(figsize=(8, 6))
 
         for i, (group_name, group_info) in enumerate(GROUPS.items()):
@@ -198,7 +209,7 @@ def _generate_plot(data: dict, model_name: str):
                 for j, q_method in enumerate(q_methods):
                     if name in q_method or (name == "percentile" and q_method == "1_binary_median") or (
                             name == "equal" and q_method == "1_binary_zero"):
-                        color = base_colors[quantization_methods.index(q_method)]
+                        color = DISPLAY_NAMES_AND_COLORS[q_method][1]
                         x = compression_ratio
                         if group_name in ["EDB", "PB"]:
                             x += X_POS[q_method] * bound
@@ -209,21 +220,25 @@ def _generate_plot(data: dict, model_name: str):
                         elif "e5" in model_name and compression_ratio == 16 and group_name == "FP":
                             x -= 0.2 * bound
                         y = np.mean(data[metric][compression_ratio][q_method])
-                        plt.scatter(x, y, label=DISPLAY_NAMES[q_method], marker=marker, color=color, edgecolor='black',
-                                    s=100, alpha=0.7)
+                        plt.scatter(x, y, label=DISPLAY_NAMES_AND_COLORS[q_method][0], marker=marker, color=color,
+                                    edgecolor='black', s=100, alpha=0.7)
                 plt.axvspan(compression_ratio - 0.7 * bound, compression_ratio + 0.7 * bound, color='whitesmoke',
                             alpha=0.1, lw=0, zorder=-1)
 
         plt.xscale('log', base=2)
+        plt.xlabel("Compression Ratio", fontsize=16)
+        plt.ylabel("Recall@100", fontsize=16)
         xticks = list(data[metric].keys())
-        plt.ylim(0.19, 0.72)
         plt.xticks(xticks, [str(xtick) for xtick in xticks], fontsize=14)
         plt.yticks(fontsize=14)
         plt.grid(True, linestyle="--", alpha=0.6)
         handles, labels = plt.gca().get_legend_handles_labels()
         unique = dict(zip(labels, handles))
-        plt.legend(unique.values(), unique.keys(), bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=11,
-                   title="Compression Methods", title_fontsize=12)
+        labels = list(unique.keys())[0:3] + [""] + list(unique.keys())[3:]
+        handles = list(unique.values())[0:3] + ["With Vector Truncation:"] + list(unique.values())[3:]
+        unique = dict(zip(labels, handles))
+        plt.legend(unique.values(), unique.keys(), bbox_to_anchor=(1.05, 1), loc="upper left", fontsize=11,
+                   title="Compression Methods", title_fontsize=12, handler_map={str: LegendTitle({'fontsize': 11})})
         plt.tight_layout()
         plt.savefig(save_path)
         plt.savefig(save_path.replace(".pdf", ".png"), dpi=300)

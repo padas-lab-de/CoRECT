@@ -47,29 +47,18 @@ COMPRESSION_PAIRS_DIM = [
 COMPRESSION_PAIRS_Q = [
     (1024, "16_bfloat16"),
     (1024, "8_percentile"),
-    (1024, "8_equal_distance"),
     (1024, "4_percentile"),
-    (1024, "4_equal_distance"),
     (1024, "2_percentile"),
-    (1024, "2_equal_distance"),
     (1024, "1_binary_median"),
-    (1024, "1_binary_zero"),
 ]
 DISPLAY_NAMES = {
+    "32_full": "32",
     "16_half": "16",
     "16_bfloat16": "16",
-    "8_percentile": "8_percentile",
-    "8_equal_distance": "8_min_max",
-    "4_percentile": "4_percentile",
-    "4_equal_distance": "4_min_max",
-    "2_percentile": "2_percentile",
-    "2_equal_distance": "2_min_max",
-    "1_binary_median": "1_median",
-    "1_binary_zero": "1_zero",
-    "32_pca": "32_pca",
-    "512_2_pq": "512_2_pq",
-    "128_8_pq": "128_8_pq",
-    "1024_lsh": "1024_lsh",
+    "8_percentile": "8",
+    "4_percentile": "4",
+    "2_percentile": "2",
+    "1_binary_median": "1",
 }
 COMPUTE_METRICS = {
     "ndcg_at_10": lambda data: compute_ndcg(data, k=10),
@@ -311,9 +300,13 @@ def plot_combined_lines(model_name: str, metric: str):
         ax.set_xscale("log")
         ax.set_xticks(corpus_sizes)
         ax.set_xticklabels([f"{x:,}" for x in corpus_sizes], rotation=30, fontsize=12)
+        ax.set_xlabel("Corpus size", fontsize=14)
         ax.tick_params(axis="y", labelsize=12)
         ax.set_title(titles[i], fontsize=12.5, pad=12)
         ax.grid(True, linestyle="--", alpha=0.6)
+
+        if i == 0:
+            ax.set_ylabel("Recall@100", fontsize=14)
 
         legend = ax.legend(title=legend_titles[i], loc="upper right", ncol=2, fontsize=8)
         legend.get_title().set_ha("center")
