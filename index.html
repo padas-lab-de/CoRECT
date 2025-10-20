@@ -396,7 +396,6 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
         <pre><code class="language-console">corect evaluate jinav3 my_ir_dataset</code></pre>
       </div>
 
-
       <!-- Results Tab -->
       <div class="tab-pane fade" id="results" role="tabpanel">
         <p>Please select from the options below to view the plots.</p>
@@ -420,7 +419,9 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
             <label class="form-label">Model</label>
             <select class="form-select" id="models" multiple size="2">
               <option selected>Jina v3</option>
-              <option>Multilingual E5 (instruct)</option>
+              <option>Multilingual E5 (Large Instruct)</option>
+              <option>Snowflake v1</option>
+              <option>Snowflake v2</option>
             </select>
           </div>
           <div class="col-md-3">
@@ -428,6 +429,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
             <select class="form-select" id="visualization">
               <option value="heatmaps">Heatmaps</option>
               <option value="line_charts">Line charts</option>
+              <option value="pareto-plots">Pareto Plots</option>
             </select>
           </div>
         </div>
@@ -441,7 +443,6 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
   <script>
     const datasetSelect = document.getElementById('dataset');
     const visualizationSelect = document.getElementById('visualization');
@@ -452,7 +453,18 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
     [datasetSelect, visualizationSelect, modelSelect, metricSelect].forEach(el => el.addEventListener('change', renderPlots));
 
     function sanitizeModel(model) {
-      return model === 'Jina v3' ? 'JinaV3Wrapper' : 'E5MultilingualWrapper';
+      switch (model) {
+        case 'Jina v3':
+          return 'jina';
+        case 'Multilingual E5 (Large Instruct)':
+          return 'e5';
+        case 'Snowflake v1':
+          return 'snowflake';
+        case 'Snowflake v2':
+          return 'snowflakev2';
+        default:
+          return 'jina'; // fallback to default
+      }
     }
 
     function renderPlots() {
@@ -512,13 +524,19 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
     function updateVisualizationOptions() {
       const selectedDataset = datasetSelect.value;
       const lineOption = visualizationSelect.querySelector('option[value="line_charts"]');
+      const paretoOption = visualizationSelect.querySelector('option[value="pareto_plots"]');
       if (selectedDataset === 'beir') {
         if (visualizationSelect.value === 'line_charts') {
           visualizationSelect.value = 'heatmaps';
         }
+        if (visualizationSelect.value === 'pareto_plots') {
+          visualizationSelect.value = 'heatmaps';
+        }
         lineOption.disabled = true;
+        paretoOption.disabled = true;
       } else {
         lineOption.disabled = false;
+        paretoOption.disabled = false;
       }
     }
 
