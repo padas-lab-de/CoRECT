@@ -126,7 +126,7 @@
 
         <h4>1. Clone the repository</h4>
 
-        <pre><code>git clone</code></pre>
+        <pre><code class="language-console">git clone https://github.com/padas-lab-de/CoRECT.git</code></pre>
 
         <h4>2. Install dependencies</h4>
 
@@ -135,43 +135,267 @@
         <h5>Using Poetry (recommended)</h5>
 
         <p>If you have the <a href="https://python-poetry.org/">Poetry</a> package manager for Python installed already, you can simply set up everything with:</p>
-        <pre><code>poetry install<br>source $(poetry env info --path)/bin/activate</code></pre>
+        <pre><code class="language-console">poetry install
+source $(poetry env info --path)/bin/activate</code></pre>
         <p>After the installation of all dependencies, you will end up in a new shell with a loaded venv. In this shell, you can run the main <em>corect</em> command. You can exit the shell at any time with <em>exit</em>.</p>
-        <pre><code>corect --help</code></pre>
+        <pre><code class="language-console">corect --help</code></pre>
         <p>To install new dependencies in an existing poetry environment, you can run the following commands with the shell environment being activated:</p>
-        <pre><code>poetry lock<br>poetry install</code></pre>
+        <pre><code class="language-console">poetry lock
+poetry install</code></pre>
 
         <h5>Using Pip (alternative)</h5>
 
-        <p>You can also create a venv yourself and use `pip` to install dependencies:</p>
-        <pre><code>python3 -m venv venv<br>source venv/bin/activate<br>pip install .</code></pre>
+        <p>You can also create a venv yourself and use <code>pip</code> to install dependencies:</p>
+        <pre><code class="language-console">python3 -m venv venv
+source venv/bin/activate
+pip install .</code></pre>
 
-        <h4>3. Run evaluation code</h4>
+        <h4>3. Run Evaluation Code</h4>
 
-        <p>The evaluation code currently supports two datasets: A transformed version of the MS MARCO v2 dataset, called CoRE, and public BEIR datasets. In addition to the dataset, the code also loads an embedding model (currently Jina V3 or E5-Multilingual) to evaluate the defined compression techniques. To start the evaluation, execute the command</p>
-        <pre><code>corect evaluate jina core     # Evaluates Jina V3 on CoRE<br>corect evaluate e5 beir       # Evaluates E5-Multilingual on BEIR</code></pre>
-        <p>After running the evaluation code, you will find the results in the <em>results</em> folder. The results are stored in a JSON file with the name of the model and the dataset. To share the results, copy the respective JSON file to the <em>share_results</em> folder.</p>
+        <p>The evaluation code currently supports two datasets: A transformed version of the MS MARCO v2 dataset, called CoRE, and public BeIR datasets.
+          In addition to the dataset, the code also loads an embedding model to evaluate the defined compression techniques.
+          The currently supported models are
+          <a href="https://huggingface.co/jinaai/jina-embeddings-v3">Jina V3</a> (jinav3),
+          <a href="https://huggingface.co/intfloat/multilingual-e5-large-instruct">Multilingual-E5-Large-Instruct</a> (e5),
+          <a href="https://huggingface.co/Snowflake/snowflake-arctic-embed-m">Snowflake-Arctic-Embed-m</a> (snowflake), and
+          <a href="https://huggingface.co/Snowflake/snowflake-arctic-embed-m-v2.0">Snowflake-Arctic-Embed-m-v2.0</a> (snowflakev2).
+        </p>
+
+        <pre><code class="language-console">corect evaluate jinav3 core     # Evaluates Jina V3 on CoRE
+corect evaluate e5 beir         # Evaluates E5-Multilingual on BeIR</code></pre>
+
+        <p>The code downloads the respective datasets from Hugging Face and uses the chosen model to generate the embeddings.
+          By default, the embeddings are stored on device for later re-evaluation.
+          To avoid this, change line <em>177</em> in the <code>evaluation.py</code> script to <code>None</code>.
+          The embeddings will then be compressed using the compression methods specified in <code>compression_registry.py</code>.
+        </p>
+
+        <p>
+          After running the evaluation code, you will find the results in the <em>results</em> folder.
+          The results are stored in a JSON file in a folder structure organized by model name and dataset.
+          To share the results, copy the respective JSON file to the <em>share_results</em> folder.
+          Default folders for storing results and embeddings can be changed in <code>config.py</code>.
+          Results are stored in the following format:
+        </p>
+
+        <pre><code class="language-json">{
+    "ndcg_at_1": 0.38462,
+    "ndcg_at_3": 0.33752,
+    ...
+    "rc_at_1000": {
+        "relevant": 10.0,
+        "distractor": 99.63077
+    },
+    "rankings": {
+        "qid1": {
+            "relevant": {"cid1": 0, "cid9": 5, ...},
+            "distractor": {"cid3": 2, "cid5": 3, ...},
+            "random": {"cid17": 1, "cid15": 11, ...}
+        },
+        ...
+    }
+}</code></pre>
 
         <h4>4. Extend CoRECT</h4>
 
-        <h5>Add new compression technique</h5>
-        <p>The currently implemented compression techniques can be found in the <a href="https://github.com/anonymous-202505/CoRECT/tree/main/src/corect/quantization">quantization</a> folder.
-          To add a new method, implement a class that extends <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/quantization/AbstractCompression.py">AbstractCompression</a> and add your custom compression method via the <em>compress()</em> method.
-          To include your class in the evaluation, modify the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/compression_registry.py">compression registry</a> and register your class with the compression methods dictionary.
-          You should now be able to evaluate your compression technique by running the evaluation script as described above.</p>
+        <h5>Add New Compression Technique</h5>
+        <p>
+          The currently implemented compression techniques can be found in the
+          <a href="src/corect/quantization">quantization</a> folder.
+          To add a new method, implement a class that extends
+          <a href="src/corect/quantization/AbstractCompression.py">AbstractCompression</a>
+          and add your custom compression technique via the <code>compress()</code> method:
+        </p>
 
-        <h5>Add new model</h5>
-        <p>New models can be added by implementing the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/model_wrappers/AbstractModelWrapper.py">AbstractModelWrapper</a> class, which allows you to customize the query and corpus embedding process.
-          The wrapper then needs to be registered in the <em>_get_model_wrapper()</em> method of the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/cli/evaluate.py">evaluation script</a> and the model name defined there can then be used to evaluate the model.</p>
-        <pre><code>corect evaluate &lt;model_name&gt; core</code></pre>
+        <pre><code class="language-python">import torch
+from corect.quantization.AbstractCompression import AbstractCompression
 
-        <h5>Add new dataset</h5>
-        <p>Our framework supports the addition of any HuggingFace retrieval datasets with corpus, queries and qrels splits.
-          To add a custom dataset, navigate to the <a href="https://github.com/anonymous-202505/CoRECT/blob/main/src/corect/dataset_utils.py">dataset utils</a> script, add a load function for your new dataset and register it in the <em>load_data()</em> function.
-          You also need to add information on the new dataset to the <em>datasets</em> dictionary in this class in the form of <em>datasets[&lt;dataset_name&gt;]=[&lt;dataset_name&gt;]</em>.
-          Running the evaluation script on the new dataset can then be achieved by executing the evaluation command.</p>
-        <pre><code>corect evaluate jina &lt;dataset_name&gt;</code></pre>
+PRECISION_TYPE = {
+    "float16": 16,
+    "bfloat16": 16,
+}
+
+class FloatingCompression(AbstractCompression):
+    def __init__(self, precision_type: str = "float16"):
+        assert precision_type in PRECISION_TYPE
+        self.precision_type = precision_type
+
+    def compress(self, embeddings: torch.Tensor) -> torch.Tensor:
+        if self.precision_type == "float16":
+            return embeddings.type(torch.float16)
+        elif self.precision_type == "bfloat16":
+            return embeddings.type(torch.bfloat16)
+        else:
+            raise NotImplementedError(
+                f"Cannot convert embedding to invalid precision type {self.precision_type}!"
+            )</code></pre>
+
+        <p>
+          To include your class in the evaluation, modify the <code>add_compressions</code> method in the
+          <a href="src/corect/compression_registry.py">compression registry</a>
+          to register your class with the compression methods dictionary:
+        </p>
+
+        <pre><code class="language-python">from typing import Dict
+from corect.quantization.AbstractCompression import AbstractCompression
+from corect.quantization.FloatCompression import PRECISION_TYPE, FloatCompression
+
+class CompressionRegistry:
+    _compression_methods: Dict[str, AbstractCompression] = {}
+
+    @classmethod
+    def get_compression_methods(cls) -> Dict[str, AbstractCompression]:
+        return cls._compression_methods
+
+    @classmethod
+    def clear(cls):
+        cls._compression_methods.clear()
+
+    @classmethod
+    def add_baseline(cls):
+        cls._compression_methods["32_full"] = FloatCompression("full")
+
+    @classmethod
+    def add_compressions(cls):
+        # Add your compression method here to use it for evaluation.
+        for precision, num_bits in PRECISION_TYPE.items():
+            cls._compression_methods[f"{num_bits}_{precision}"] = FloatCompression(precision)</code></pre>
+
+        <p>
+          You should now be able to evaluate your compression technique by running the evaluation script as described above.
+        </p>
+
+        <h5>Add New Model</h5>
+
+        <p>
+          New embedding models can be added by implementing the
+          <a href="src/corect/model_wrappers/AbstractModelWrapper.py">AbstractModelWrapper</a>
+          class, which requires implementing encoding functions for queries and documents.
+          Any model available via <code>transformers</code> can be added easily. For reference, consider the example below:
+        </p>
+
+        <pre><code class="language-python">from typing import List, Union
+import torch
+from transformers import AutoModel, AutoTokenizer
+from corect.model_wrappers import AbstractModelWrapper
+from corect.utils import cos_sim
+
+def _last_token_pool(last_hidden_states: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+    left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
+    if left_padding:
+        return last_hidden_states[:, -1]
+    else:
+        sequence_lengths = attention_mask.sum(dim=1) - 1
+        batch_size = last_hidden_states.shape[0]
+    return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
+
+class Qwen3Wrapper(AbstractModelWrapper):
+    def __init__(self, pretrained_model_name="Qwen/Qwen3-Embedding-0.6B"):
+        super().__init__()
+        self.encoder = AutoModel.from_pretrained(pretrained_model_name, trust_remote_code=True, torch_dtype=torch.float16)
+        self.encoder.cuda()
+        self.encoder.eval()
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name, trust_remote_code=True, padding_side='left')
+
+    def _encode_input(self, sentences: List[str]) -> torch.tensor:
+        inputs = self.tokenizer(sentences, padding=True, truncation=True, return_tensors='pt', max_length=8192)
+        inputs.to('cuda')
+        model_outputs = self.encoder(**inputs)
+        outputs = _last_token_pool(model_outputs.last_hidden_state, inputs['attention_mask'])
+        outputs = torch.nn.functional.normalize(outputs, p=2, dim=1)
+        return outputs
+
+    def encode_queries(self, queries: List[str], **kwargs) -> torch.tensor:
+        return self._encode_input(queries)
+
+    def encode_corpus(self, corpus: Union[str, List[str]], **kwargs) -> torch.tensor:
+        if isinstance(corpus, str):
+            corpus = [corpus]
+        return self._encode_input(corpus)
+
+    def similarity(self, embeddings_1: torch.Tensor, embeddings_2: torch.Tensor) -> torch.Tensor:
+        return cos_sim(embeddings_1, embeddings_2)
+
+    @property
+    def name(self) -> str:
+        return "Qwen3Wrapper"</code></pre>
+
+        <p>
+          The wrapper then needs to be registered in the <code>get_model_wrapper()</code> method of the
+          <a href="src/corect/cli/evaluate.py">evaluation script</a>:
+        </p>
+
+        <pre><code class="language-python">from typing import Tuple
+from corect.model_wrappers import AbstractModelWrapper, JinaV3Wrapper, Qwen3Wrapper
+
+def get_model_wrapper(model_name: str) -> Tuple[AbstractModelWrapper, int]:
+    if model_name == "jinav3":
+        return JinaV3Wrapper(), 1024
+    elif model_name == "qwen3":
+        return Qwen3Wrapper(), 1024     # 1024 is the embedding dimension of the Qwen model.
+    else:
+        raise NotImplementedError(f"Model {model_name} not supported!")</code></pre>
+
+        <p>The model can then be evaluated as follows:</p>
+        <pre><code class="language-console">corect evaluate qwen3 core</code></pre>
+
+        <h5>Add New Dataset</h5>
+
+        <p>
+          Our framework supports the addition of any HuggingFace retrieval datasets with corpus, queries and qrels splits.
+          To add a custom dataset, navigate to the
+          <a href="src/corect/dataset_utils.py">dataset utils</a> script, add a load function for your new dataset and register it in the <code>load_data()</code> function.
+          You also need to add information on the new dataset to the <code>datasets</code> dictionary in this class in the form of
+          <code>datasets[&lt;dataset_name&gt;]=[&lt;dataset_name&gt;]</code>. The example below adds a new dataset called <em>my_ir_dataset</em>:
+        </p>
+
+        <pre><code class="language-python">from collections import defaultdict
+from typing import Dict, Tuple
+from datasets import load_dataset
+
+CoRE = {"passage": {"pass_core": 10_000, "pass_10k": 10_000}}
+DATASET = ["my_dataset_name"]
+CoRE_NAME = "core"
+DATASET_NAME = "my_ir_dataset"
+DATASETS = {CoRE_NAME: CoRE, DATASET_NAME: DATASET}
+
+def _load_core_data(dataset_sub_corpus: str):
+    # Code for loading CoRE
+    ...
+
+def _load_my_dataset(dataset_name: str) -> Tuple[defaultdict, Dict[str, str], defaultdict, defaultdict]:
+    dataset_queries = load_dataset(f"hf_repo/my_dataset", "queries")
+    dataset_qrels = load_dataset(f"hf_repo/my_dataset", "default")
+    dataset_corpus = load_dataset(f"hf_repo/my_dataset", "corpus")
+
+    qrels = defaultdict(dict)
+    for q in dataset_qrels:
+        query_id = q["query-id"]
+        corpus_id = q["corpus-id"]
+        qrels[query_id][corpus_id] = int(q["score"])
+
+    queries = {q["_id"]: q["text"] for q in dataset_queries["queries"] if q["_id"] in qrels.keys()}
+
+    corpora = defaultdict(dict)
+    for d in dataset_corpus["corpus"]:
+        corpora[dataset_name][d["_id"]] = {"title": d["title"], "text": d["text"]}
+
+    return corpora, queries, qrels, qrels
+
+def load_data(dataset_name: str, dataset_sub_corpus: str):
+    if dataset_name == CoRE_NAME:
+        return _load_core_data(dataset_sub_corpus)
+    elif dataset_name == DATASET_NAME:
+        return _load_my_dataset(dataset_sub_corpus)
+    else:
+        raise NotImplementedError(f"Cannot load data for unsupported dataset {dataset_name}!")</code></pre>
+
+        <p>
+          Running the evaluation script on the new dataset can then be achieved by executing the following command:
+        </p>
+        <pre><code class="language-console">corect evaluate jinav3 my_ir_dataset</code></pre>
       </div>
+
 
       <!-- Results Tab -->
       <div class="tab-pane fade" id="results" role="tabpanel">
