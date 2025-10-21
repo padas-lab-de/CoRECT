@@ -13,17 +13,11 @@ from corect.config import *
 USE_QUANTIZATION_METHODS = {
     "32_full": "f32",
     "16_half": "f16",
-    # "16_bfloat16": "bf16",
     "8_float8m3": "f8m3",
-    # "8_float8m2": "f8m2",
-    # "8_percentile": "8p",
-    "8_equal_distance": "8",  # "8e",
-    # "4_percentile": "4p",
-    "4_equal_distance": "4",  # "4e",
-    # "2_percentile": "2p",
-    "2_equal_distance": "2",  # "2e",
-    # "1_binary_median": "1m",
-    "1_binary_zero": "1",  # "1z",
+    "8_equal_distance": "8",
+    "4_equal_distance": "4",
+    "2_equal_distance": "2",
+    "1_binary_zero": "1",
 }
 DATASETS = {
     "arguana": ["arguana"],
