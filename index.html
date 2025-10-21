@@ -95,6 +95,10 @@
           <li><strong>Scalar quantization</strong>: Values are mapped into fixed bit-width ranges (e.g., 8-bit → 256 bins), computed on a per-batch and per-dimension basis using <strong>percentile binning</strong> and <strong>euqal-distance binning</strong></li>
           <li><strong>Binarization</strong>: Each embedding value is converted to 0 or 1 via simple zero-thresholding as well as using the <strong>median</strong> of each dimension as a threshold.</li>
           <li><strong>Casting</strong>: We type-cast the original embedding to other floating point types, i.e. <strong>FP16</strong>, <strong>BF16</strong> or <strong>FP8</strong>, depending on the tensor type used during model training.</li>
+          <li><strong>Vector Truncation</strong>: We truncate embedding vectors by taking only the first <em>x</em> dimensions, with <em>x</em> chosen according the cutoff points of our models trained with Matryoshka Representation Learning. We also combine this approach with the three methods above.</li>
+          <li><strong>Principal Component Analysis</strong>: We use PCA to reduce the number of dimensions per embedding vector, choosing the same number of dimensions as for vector truncation.</li>
+          <li><strong>Locality-Sensitive Hashing</strong>: We use LSH to map the embeddings to a binary vector. We choose the output length of the binary embedding such that we compress the original vector by a factor of 4, 8, 16, an 32, respectively.</li>
+          <li><strong>Product Quantization</strong>: Lastly, we apply PQ, choosing six combinations for the number of subvectors and code size.</li>
         </ul>
 
         <h3>Implementation Details</h3>
