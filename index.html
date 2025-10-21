@@ -407,7 +407,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
             <label class="form-label">Dataset</label>
             <select class="form-select" id="dataset">
               <option value="core">CoRE</option>
-              <option value="beir">BEIR</option>
+              <option value="beir">BeIR</option>
             </select>
           </div>
           <div class="col-md-3">
@@ -493,7 +493,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
         let content = '';
 
         if (viz === 'heatmaps') {
-          const dataset_name = dataset === 'core' ? 'CoRE' : 'BEIR';
+          const dataset_name = dataset === 'core' ? 'CoRE' : 'BeIR';
           content += '<p>Performance on ' + dataset_name + ' combining different levels of dimensionality reduction (y-axis) with different levels of precision/quantization (x-axis).</p>'
           if (dataset === 'core') {
             let src1 = [];
@@ -510,7 +510,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
             const datasets = ['arguana', 'cqadupstack',  'dbpedia', 'fiqa', 'nfcorpus', 'nq', 'quora', 'scidocs', 'scifact', 'touche2020', 'trec-covid',];
             const batch2 = datasets.map(name => `./resources/heatmaps/${modelDir}/${metric}/${name}_${name}.png`);
 
-            content += '<div class="plot-table mt-3">' + makePlot(batch1[0], 'Average performance and standard deviation on BEIR datasets with absolute performance delta to full precision (upper left corner)') + batch2.map((src, i) => makePlot(src, dataset_names[i])).join('') + '</div>';
+            content += '<div class="plot-table mt-3">' + makePlot(batch1[0], 'Average performance and standard deviation on BeIR datasets with absolute performance delta to full precision (upper left corner)') + batch2.map((src, i) => makePlot(src, dataset_names[i])).join('') + '</div>';
           }
         } else if (viz === 'line_charts' && dataset === 'core') {
           content += '<p>Performance on the CoRE dataset with:<br> a) full-precision, i.e. 32-bit floating point vectors, passage retrieval reducing dimensionality, i.e. only taking the first 32 vector dimensions,<br> b) passage retrieval with all vector dimensions but different levels of quantization, and<br> c) document retrieval with all vector dimensions but different levels of quantization.</p>'
@@ -519,6 +519,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
           ];
           content += '<div class="plot-grid">' + plots.map(p => makePlot(p.file, p.caption, p.width)).join('') + '</div>';
         } else if (viz === 'pareto_plots' && dataset === 'beir') {
+          content += '<p>Average Recall@100 accross BeIR datasets for different compression methods. The x-values of some compression methods have been shifted slightly for better visibility. The light gray columns in the background mark the compression ratio to which the methods belong. Shapes indicate different types of compression techniques. Some methods have been combined with vector truncation to achieve the desired compression ratio as indicated in the legend. The top-performing measures vary depending on the model.</p>'
           const plots = [
             { file: `./resources/pareto/${modelDir}/${metric}/aggregated.png`, caption: '', width: 'plot-wide-1x' }
           ];
