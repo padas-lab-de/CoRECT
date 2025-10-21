@@ -207,7 +207,7 @@ def plot_lines(
             # Add markers for significant differences
             x_x = [x[j] for j in range(len(x)) if p_values[j] < THRESHOLD_P_VALUE]
             x_y = [values[j] for j in range(len(values)) if p_values[j] < THRESHOLD_P_VALUE]
-            plt.plot(x_x, x_y, marker="*", color=COLORS[i], linestyle=None, markersize=12)
+            plt.scatter(x_x, x_y, marker="*", color=COLORS[i], s=144)
 
         plt.xscale("log")
         plt.xticks(
