@@ -519,7 +519,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
           ];
           content += '<div class="plot-grid">' + plots.map(p => makePlot(p.file, p.caption, p.width)).join('') + '</div>';
         } else if (viz === 'pareto_plots' && dataset === 'beir') {
-          content += '<p>Average measured performance metric across BeIR datasets for different compression methods. The x-values of some compression methods have been shifted slightly for better visibility. The light gray columns in the background mark the compression ratio to which the methods belong. Shapes indicate different types of compression techniques. Some methods have been combined with vector truncation to achieve the desired compression ratio as indicated in the legend. The top-performing measures vary depending on the model.</p>'
+          content += '<p>Average measured performance metric across BeIR datasets for different compression methods. The x-values of some compression methods have been shifted slightly for better visibility. The light gray columns in the background mark the compression ratio to which the methods belong. Shapes indicate different types of compression techniques. Some methods have been combined with vector truncation to achieve the desired compression ratio as indicated in the legend.</p>'
           const plots = [
             { file: `./resources/pareto/${modelDir}/${metric}/aggregated.png`, caption: '', width: 'plot-wide-1x' }
           ];
