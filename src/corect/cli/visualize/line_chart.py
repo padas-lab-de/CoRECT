@@ -25,31 +25,39 @@ DATASETS = {
         10_000_000,
     ],
 }
+FULL_DIMENSIONALITY = 768  # 1024
+FULL_PRECISION = 32  # 16
+USE_QUANTIZATION_METHODS = {
+    32: "32_full",
+    16: "16_half",
+    8: "8_percentile",
+    4: "4_percentile",
+    2: "2_percentile",
+    1: "1_binary_median",
+}
 COMPRESSION_PAIRS_16 = [
-    (1024, "16_bfloat16"),
-    (1024, "1_binary_median"),
-    (512, "2_percentile"),
-    (256, "4_percentile"),
-    (128, "8_percentile"),
-    (1024, "32_pca"),
-    (1024, "512_2_pq"),
-    (1024, "128_8_pq"),
-    (1024, "1024_lsh")
+    (FULL_DIMENSIONALITY, FULL_PRECISION),
+    (FULL_DIMENSIONALITY, FULL_PRECISION // 16),
+    (FULL_DIMENSIONALITY // 2, FULL_PRECISION // 8),
+    (FULL_DIMENSIONALITY // 4, FULL_PRECISION // 4),
+    (FULL_DIMENSIONALITY // 8, FULL_PRECISION // 2),
+    (FULL_DIMENSIONALITY // 16, FULL_PRECISION),
 ]
 COMPRESSION_PAIRS_DIM = [
-    (1024, "16_bfloat16"),
-    (512, "16_bfloat16"),
-    (256, "16_bfloat16"),
-    (128, "16_bfloat16"),
-    (64, "16_bfloat16"),
-    (32, "16_bfloat16"),
+    (FULL_DIMENSIONALITY, FULL_PRECISION),
+    (FULL_DIMENSIONALITY // 2, FULL_PRECISION),
+    (FULL_DIMENSIONALITY // 4, FULL_PRECISION),
+    (FULL_DIMENSIONALITY // 8, FULL_PRECISION),
+    (FULL_DIMENSIONALITY // 16, FULL_PRECISION),
+    (FULL_DIMENSIONALITY // 32, FULL_PRECISION),
 ]
 COMPRESSION_PAIRS_Q = [
-    (1024, "16_bfloat16"),
-    (1024, "8_percentile"),
-    (1024, "4_percentile"),
-    (1024, "2_percentile"),
-    (1024, "1_binary_median"),
+    (FULL_DIMENSIONALITY, FULL_PRECISION),
+    (FULL_DIMENSIONALITY, FULL_PRECISION // 2),
+    (FULL_DIMENSIONALITY, FULL_PRECISION // 4),
+    (FULL_DIMENSIONALITY, FULL_PRECISION // 8),
+    (FULL_DIMENSIONALITY, FULL_PRECISION // 16),
+    # (FULL_DIMENSIONALITY, FULL_PRECISION // 32),
 ]
 DISPLAY_NAMES = {
     "32_full": "32",
@@ -125,9 +133,9 @@ def compute_recall(data, k=100):
     return recall_values
 
 
-def add_data(results: dict, corpus_sizes: list, dim: int, q: str, results_path: str, metric: str, key: str):
+def add_data(results: dict, corpus_sizes: list, dim: int, q: int, results_path: str, metric: str, key: str):
     dim_dir = f"dim={dim}"
-    q_dir = f"q={q}"
+    q_dir = f"q={USE_QUANTIZATION_METHODS[q]}"
     for corpus_size in corpus_sizes:
         file_path = os.path.join(
             results_path, dim_dir, q_dir, f"{corpus_size}.json"
@@ -202,7 +210,7 @@ def plot_lines(
                     for b, r in zip(baseline, results)
                 ]
 
-            plt.plot(x, values, marker="o", label=f"dim={dim}, q={q}", color=COLORS[i])
+            plt.plot(x, values, marker="o", label=f"dim={dim}, q={USE_QUANTIZATION_METHODS[q]}", color=COLORS[i])
 
             # Add markers for significant differences
             x_x = [x[j] for j in range(len(x)) if p_values[j] < THRESHOLD_P_VALUE]
@@ -218,7 +226,7 @@ def plot_lines(
         )
         plt.yticks(fontsize=14)
         plt.grid(True, linestyle="--", alpha=0.6)
-        plt.legend(loc="upper right", fontsize=8, ncol=2)
+        plt.legend(loc="lower left", fontsize=8, ncol=2)
         plt.tight_layout()
         plt.savefig(plot_path.format(data_index))
         plt.savefig(plot_path.format(data_index).replace(".pdf", ".png"), dpi=300)
@@ -260,7 +268,7 @@ def plot_combined_lines(model_name: str, metric: str):
         if index == 0:
             return dim
         else:
-            return DISPLAY_NAMES[q]
+            return DISPLAY_NAMES[USE_QUANTIZATION_METHODS[q]]
 
     for i, ax in enumerate(axes):
         key = keys[i]
@@ -281,7 +289,7 @@ def plot_combined_lines(model_name: str, metric: str):
                     for b, r in zip(baseline, results)
                 ]
 
-            if dim == 1024 and q == "16_bfloat16":
+            if dim == FULL_DIMENSIONALITY and q == FULL_PRECISION:
                 ax.plot(
                     corpus_sizes,
                     values,
@@ -308,7 +316,7 @@ def plot_combined_lines(model_name: str, metric: str):
         if i == 0:
             ax.set_ylabel("Recall@100", fontsize=14)
 
-        legend = ax.legend(title=legend_titles[i], loc="upper right", ncol=2, fontsize=8)
+        legend = ax.legend(title=legend_titles[i], loc="lower left", ncol=2, fontsize=8)
         legend.get_title().set_ha("center")
         legend.get_title().set_fontsize(10)
 

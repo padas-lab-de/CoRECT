@@ -199,6 +199,7 @@ def _generate_plot(data: dict, model_name: str):
         )
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.figure(figsize=(8, 6))
+        plt.grid(True, linestyle="--", alpha=0.6)
 
         for i, (group_name, group_info) in enumerate(GROUPS.items()):
             marker = group_info["marker"]
@@ -231,7 +232,6 @@ def _generate_plot(data: dict, model_name: str):
         xticks = list(data[metric].keys())
         plt.xticks(xticks, [str(xtick) for xtick in xticks], fontsize=14)
         plt.yticks(fontsize=14)
-        plt.grid(True, linestyle="--", alpha=0.6)
         handles, labels = plt.gca().get_legend_handles_labels()
         unique = dict(zip(labels, handles))
         labels = list(unique.keys())[0:3] + [""] + list(unique.keys())[3:]
