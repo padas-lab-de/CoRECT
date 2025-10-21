@@ -11,7 +11,7 @@ import seaborn as sns
 from corect.config import *
 
 USE_QUANTIZATION_METHODS = {
-    "32_full": "f32",
+    # "32_full": "f32",
     "16_half": "f16",
     # "16_bfloat16": "bf16",
     "8_float8m3": "f8m3",
@@ -169,12 +169,14 @@ def plot_aggregated_heatmap(model_name: str, arrays: dict, cqa_values: dict, cqa
             means_annot.append(value)
             std_annot.append(f"±{std[idx]}")
 
-        shape = (len(cqa_scores[metric].keys()), len(cqa_scores[metric]["f32"].keys()))
+        # shape = (len(cqa_scores[metric].keys()), len(cqa_scores[metric]["f32"].keys()))
+        shape = (len(cqa_scores[metric].keys()), len(cqa_scores[metric]["f16"].keys()))
         means_annot = np.array(means_annot).reshape(shape)
         std_annot = np.array(std_annot).reshape(shape)
         df = pd.DataFrame(
             means.reshape(shape),
-            columns=list(cqa_scores[metric]["f32"].keys()),
+            # columns=list(cqa_scores[metric]["f32"].keys()),
+            columns=list(cqa_scores[metric]["f16"].keys()),
             index=list(cqa_scores[metric].keys()),
         )
         plt.figure(figsize=(8, 6))
@@ -245,12 +247,13 @@ def heatmap(model_name: str):
                 if isinstance(corpus_size, int):
                     continue
 
-                full_prec_value = data[metric]["f32"][max(data[metric]["f32"].keys())]
+                # full_prec_value = data[metric]["f32"][max(data[metric]["f32"].keys())]
+                full_prec_value = data[metric]["f16"][max(data[metric]["f16"].keys())]
                 data_metric = {
                     key: dict(sorted(value.items(), key=lambda x: x[0], reverse=True))
                     for key, value in data[metric].items()
                 }
-                data_metric = dict(sorted(data_metric.items(), key=lambda x: x[0], reverse=True))
+                # data_metric = dict(sorted(data_metric.items(), key=lambda x: x[0], reverse=True))
                 values = []
                 for dim, scores in data_metric.items():
                     for q, score in scores.items():
