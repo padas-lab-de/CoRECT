@@ -77,9 +77,12 @@ class JinaV3Wrapper(AbstractModelWrapper):
         **kwargs,
     ):
         _sentences = [_construct_document(sentence) for sentence in sentences]
-        return self.encoder.encode(
-            _sentences, *args, task="retrieval.passage", **kwargs, convert_to_tensor=True,
-        )
+        batch_size = 64
+        embeds = []
+        for start_idx in range(0, len(_sentences), batch_size):
+            embeds.append(self.encoder.encode(_sentences[start_idx:start_idx + batch_size], *args,
+                                              task="retrieval.passage", **kwargs, convert_to_tensor=True))
+        return torch.vstack(embeds)
 
     def get_instructions(self):
         return [

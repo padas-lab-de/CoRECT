@@ -55,7 +55,11 @@ class SnowflakeWrapper(AbstractModelWrapper):
             "{} {}".format(doc.get("title", ""), doc["text"]).strip() for doc in corpus
         ]
         input_texts = ["{}".format(t) for t in input_texts]  # No doc prefix
-        return self._do_encode(input_texts)
+        batch_size = 10000
+        embeds = []
+        for start_idx in range(0, len(input_texts), batch_size):
+            embeds.append(self._do_encode(input_texts[start_idx:start_idx + batch_size]))
+        return torch.vstack(embeds)
 
     def _do_encode(self, input_texts: List[str]) -> torch.Tensor:
         dataset: Dataset = Dataset.from_dict({"contents": input_texts})

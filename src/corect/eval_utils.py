@@ -111,9 +111,6 @@ def _get_compression_keys() -> List[str]:
         The list of names.
     """
     quantizations = [key for key in CompressionRegistry.get_compression_methods().keys()]
-    if len(CompressionRegistry.get_pretrained_methods()) > 0:
-        for key in CompressionRegistry.get_pretrained_methods().keys():
-            quantizations.append(key)
     return quantizations
 
 
@@ -185,7 +182,7 @@ def search(
                     # Encode chunk of corpus
                     encode_corpus(os.path.join(save_path, str(corpus_size)), corpus[corpus_start_idx:corpus_end_idx],
                                   encode_kwargs, model, batch_num)
-        torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
 
         # Determine global quantization boundaries for dataset
         if not batch_threshold:
