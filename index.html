@@ -58,14 +58,8 @@
 
         <p>Our work addresses two main objectives:</p>
         <ul>
-          <li><strong>Comparing embedding compression methods</strong>: We benchmark <strong>quantization</strong>, <strong>binarization</strong>, and <strong>dimensionality reduction</strong> techniques.</li>
+          <li><strong>Comparing embedding compression methods</strong>: We benchmark <strong>quantization</strong>, <strong>binarization</strong>, <strong>vector truncation</strong>, <strong>Principal Component Analysis</strong>, <strong>Locality-Sensitive Hashing</strong> and <strong>Product Quantization</strong>.</li>
           <li><strong>Analyzing scalability</strong>: We evaluate how retrieval quality degrades or holds up when scaling the corpus from <strong>10K to 100M passages</strong> and from <strong>10K to 10M documents</strong>.</li>
-        </ul>
-
-        <p>Our findings show that:</p>
-        <ul>
-          <li><strong>Quantization</strong> consistently outperforms dimensionality reduction, especially on larger corpora.</li>
-          <li>Retrieval effectiveness can be preserved even at <strong>32× compression</strong> for large-scale corpora. This highlights the practicality of lightweight embedding representations.</li>
         </ul>
 
         <h2>CoRE: Controlled Retrieval Evaluation</h2>
@@ -94,24 +88,25 @@
         <h2>Quantization Methods</h2>
 
         <p>
-          We implement and benchmark a range of <strong>vector quantization techniques</strong>, including:
+          We implement and benchmark a range of <strong>compression techniques</strong>, including:
         </p>
 
         <ul>
-          <li><strong>Scalar quantization</strong>: Values are mapped into fixed bit-width ranges (e.g., 8-bit → 256 bins), computed on a per-batch and per-dimension basis using <strong>percentile binning</strong></li>
-          <li><strong>Binarization</strong>: Each embedding value is converted to 0 or 1 using the <strong>median</strong> of each dimension as the threshold</li>
-          <li><strong>Casting</strong>: We include <strong>16-bit float casting</strong> as a lightweight alternative to full 32-bit precision</li>
+          <li><strong>Scalar quantization</strong>: Values are mapped into fixed bit-width ranges (e.g., 8-bit → 256 bins), computed on a per-batch and per-dimension basis using <strong>percentile binning</strong> and <strong>euqal-distance binning</strong></li>
+          <li><strong>Binarization</strong>: Each embedding value is converted to 0 or 1 via simple zero-thresholding as well as using the <strong>median</strong> of each dimension as a threshold.</li>
+          <li><strong>Casting</strong>: We type-cast the original embedding to other floating point types, i.e. <strong>FP16</strong>, <strong>BF16</strong> or <strong>FP8</strong>, depending on the tensor type used during model training.</li>
         </ul>
 
         <h3>Implementation Details</h3>
 
         <ul>
-          <li>Quantization is applied to batches of up to <strong>50,000 vectors</strong></li>
-          <li>Percentile boundaries are computed for quantization, e.g., 25th, 50th, 75th for 2 bits, producing 4 discrete bins per dimension</li>
-          <li>Results are given in a <strong>grid of 36 compression levels</strong>, combining:
+          <li>Compression is applied to batches of up to <strong>50,000 vectors</strong> at once.</li>
+          <li>Quantization thresholds and similar embedding-dependent parameters are computed and applied per batch.</li>
+          <li>Results are shown in different plots, depending on the dataset:
             <ul>
-              <li>Full and truncated dimensionalities (1024 → 32)</li>
-              <li>Quantization levels (32-bit → 1-bit)</li>
+              <li><strong>Heatmaps</strong> visualize the results that combine vector truncation with FP casting, scalar quantization (equal-distance) and binarization (zero threshold).</li>
+              <li><strong>Line Charts</strong> show results on the CoRE dataset, giving insights into how compression methods perform when the difficulty of the retrieval task increases. The plots isolate vector truncation and percentile binning.</li>
+              <li><strong>Pareto Plots</strong> compare all used methods at different compression ratios.</li>
             </ul>
           </li>
         </ul>
@@ -429,7 +424,7 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
             <select class="form-select" id="visualization">
               <option value="heatmaps">Heatmaps</option>
               <option value="line_charts">Line charts</option>
-              <option value="pareto-plots">Pareto Plots</option>
+              <option value="pareto_plots">Pareto Plots</option>
             </select>
           </div>
         </div>
@@ -529,14 +524,14 @@ def load_data(dataset_name: str, dataset_sub_corpus: str):
         if (visualizationSelect.value === 'line_charts') {
           visualizationSelect.value = 'heatmaps';
         }
+        lineOption.disabled = true;
+        paretoOption.disabled = false;
+      } else {
         if (visualizationSelect.value === 'pareto_plots') {
           visualizationSelect.value = 'heatmaps';
         }
-        lineOption.disabled = true;
-        paretoOption.disabled = true;
-      } else {
         lineOption.disabled = false;
-        paretoOption.disabled = false;
+        paretoOption.disabled = true;
       }
     }
 
