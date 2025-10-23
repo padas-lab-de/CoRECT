@@ -115,10 +115,10 @@ def _load_core_data(
         The loaded corpus, queries, qrels and relevant qrels.
     """
     # Load queries dataset
-    dataset_queries = load_dataset("anonymousaccount/CoRE", "queries")["test"]
+    dataset_queries = load_dataset("PaDaS-Lab/CoRE", "queries")["test"]
 
     # Load the qrels dataset
-    dataset_qrels = load_dataset("anonymousaccount/CoRE", "qrels")[dataset_sub_corpus]
+    dataset_qrels = load_dataset("PaDaS-Lab/CoRE", "qrels")[dataset_sub_corpus]
 
     # Transform the datasets
     qrels = defaultdict(dict)
@@ -133,7 +133,7 @@ def _load_core_data(
     # Load the corpus datasets
     datasets_corpus = {}
     for split_name in CoRE[dataset_sub_corpus]:
-        dataset_corpus = load_dataset("anonymousaccount/CoRE", "corpus")[split_name]
+        dataset_corpus = load_dataset("PaDaS-Lab/CoRE", "corpus")[split_name]
         datasets_corpus[split_name] = dataset_corpus
 
     # Transform the corpus datasets
