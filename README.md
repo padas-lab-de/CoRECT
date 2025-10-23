@@ -424,3 +424,19 @@ Running the evaluation script on the new dataset can then be achieved by executi
 ```
 corect evaluate jinav3 my_ir_dataset
 ```
+
+## Citation
+
+If you use this project in your research, please cite the following paper:
+
+```
+@misc{caspari2025corect,
+      title={CoRECT: A Framework for Evaluating Embedding Compression Techniques at Scale}, 
+      author={L. Caspari and M. Dinzinger and K. Gosh Dastidar and C. Fellicious and J. Mitrović and M. Granitzer},
+      year={2025},
+      eprint={2510.19340},
+      archivePrefix={arXiv},
+      primaryClass={cs.IR},
+      url={https://arxiv.org/abs/2510.19340}, 
+}
+```
