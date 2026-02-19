@@ -440,3 +440,7 @@ If you use this project in your research, please cite the following paper:
       url={https://arxiv.org/abs/2510.19340}, 
 }
 ```
+
+## License
+
+This repository is licensed under the MIT License. See the LICENSE file for details.
